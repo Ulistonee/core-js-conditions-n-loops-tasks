@@ -301,26 +301,20 @@ function isContainNumber(num, digit) {
  *  [1, 2, 3, 4, 5] => -1   => no balance element
  */
 function getBalanceIndex(arr) {
-  let totalSum = 0;
-
-  let index = 0;
-  while (index < arr.length) {
-    totalSum += arr[index];
-    index += 1;
-  }
-
-  let leftSum = 0;
-
-  index = 0;
-  while (index < arr.length) {
-    const rightSum = totalSum - leftSum - arr[index];
-
-    if (leftSum === rightSum) {
-      return index;
+  for (let i = 0; i < arr.length; i += 1) {
+    let left = 0;
+    for (let leftIndex = 0; leftIndex < i; leftIndex += 1) {
+      left += arr[leftIndex];
     }
 
-    leftSum += arr[index];
-    index += 1;
+    let right = 0;
+    for (let rightIndex = i + 1; rightIndex < arr.length; rightIndex += 1) {
+      right += arr[rightIndex];
+    }
+
+    if (left === right) {
+      return i;
+    }
   }
 
   return -1;
