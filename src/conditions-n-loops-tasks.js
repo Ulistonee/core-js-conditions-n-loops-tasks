@@ -119,27 +119,27 @@ function isIsoscelesTriangle(a, b, c) {
  *  26  => XXVI
  */
 function convertToRomanNumerals(num) {
-  const lookup = {
-    M: 1000,
-    CM: 900,
-    D: 500,
-    CD: 400,
-    C: 100,
-    XC: 90,
-    L: 50,
-    XL: 40,
-    X: 10,
-    IX: 9,
-    V: 5,
-    IV: 4,
-    I: 1,
-  };
+  const lookup = [
+    { symbol: 'M', value: 1000 },
+    { symbol: 'CM', value: 900 },
+    { symbol: 'D', value: 500 },
+    { symbol: 'CD', value: 400 },
+    { symbol: 'C', value: 100 },
+    { symbol: 'XC', value: 90 },
+    { symbol: 'L', value: 50 },
+    { symbol: 'XL', value: 40 },
+    { symbol: 'X', value: 10 },
+    { symbol: 'IX', value: 9 },
+    { symbol: 'V', value: 5 },
+    { symbol: 'IV', value: 4 },
+    { symbol: 'I', value: 1 },
+  ];
   let roman = '';
-  let i;
-  for (i in lookup) {
-    while (num >= lookup[i]) {
-      roman += i;
-      num -= lookup[i];
+  let remaining = num;
+  for (let i = 0; i < lookup.length; i += 1) {
+    while (remaining >= lookup[i].value) {
+      roman += lookup[i].symbol;
+      remaining -= lookup[i].value;
     }
   }
   return roman;
@@ -161,37 +161,43 @@ function convertToRomanNumerals(num) {
  *  '1950.2'  => 'one nine five zero point two'
  */
 function convertNumberToString(numberStr) {
-  const digitToWordMap = {
-    0: 'zero',
-    1: 'one',
-    2: 'two',
-    3: 'three',
-    4: 'four',
-    5: 'five',
-    6: 'six',
-    7: 'seven',
-    8: 'eight',
-    9: 'nine',
-    '-': 'minus',
-    '.': 'point',
-    ',': 'point',
-  };
-
-  let result = '';
-  let index = 0;
-
-  while (index < numberStr.length) {
-    const char = numberStr[index];
-    const word = digitToWordMap[char] || '';
-    if (word) {
-      if (result.length > 0) {
-        result += ' ';
-      }
-      result += word;
+  const convertToWord = (n) => {
+    switch (n) {
+      case '0':
+        return 'zero';
+      case '1':
+        return 'one';
+      case '2':
+        return 'two';
+      case '3':
+        return 'three';
+      case '4':
+        return 'four';
+      case '5':
+        return 'five';
+      case '6':
+        return 'six';
+      case '7':
+        return 'seven';
+      case '8':
+        return 'eight';
+      case '9':
+        return 'nine';
+      case '.':
+        return 'point';
+      case ',':
+        return 'point';
+      case '-':
+        return 'minus';
+      default:
+        return 'error';
     }
-    index += 1;
+  };
+  let result = '';
+  for (let i = 0; i < numberStr.length; i += 1) {
+    result +=
+      convertToWord(numberStr[i]) + (i < numberStr.length - 1 ? ' ' : '');
   }
-
   return result;
 }
 
@@ -503,27 +509,25 @@ function sortByAsc(arr) {
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
 function shuffleChar(str, iterations) {
-  let result = str; // Start with the original string
+  let result = str;
   const { length } = result;
 
-  let i = 0;
-  while (i < iterations) {
+  for (let i = 1; i <= iterations; i += 1) {
     let evenChars = '';
     let oddChars = '';
 
-    let j = 0;
-    while (j < length) {
+    for (let j = 0; j < length; j += 1) {
       if (j % 2 === 0) {
         evenChars += result[j];
       } else {
         oddChars += result[j];
       }
-      j += 1;
     }
 
     result = evenChars + oddChars;
-
-    i += 1;
+    if (result === str) {
+      return shuffleChar(str, iterations % i);
+    }
   }
 
   return result;
@@ -549,49 +553,31 @@ function shuffleChar(str, iterations) {
 function getNearestBigger(number) {
   const digits = [];
   let n = number;
-
-  let i = 0;
   while (n > 0) {
-    digits[i] = n % 10;
+    digits.unshift(n % 10);
     n = Math.floor(n / 10);
-    i += 1;
   }
-
-  let j = 0;
-  while (j < digits.length - 1 && digits[j] >= digits[j + 1]) {
-    j += 1;
+  let j = digits.length - 2;
+  while (j >= 0 && digits[j] >= digits[j + 1]) {
+    j -= 1;
   }
-
-  if (j === digits.length - 1) {
+  if (j === -1) {
     return number;
   }
-
-  let k = j + 1;
-  while (k < digits.length && digits[k] > digits[j]) {
-    k += 1;
+  let k = digits.length - 1;
+  while (digits[k] <= digits[j]) {
+    k -= 1;
   }
-
-  let temp = digits[j];
-  digits[j] = digits[k - 1];
-  digits[k - 1] = temp;
-
-  let left = j + 1;
-  let right = digits.length - 1;
-  while (left < right) {
-    temp = digits[left];
-    digits[left] = digits[right];
-    digits[right] = temp;
-    left += 1;
-    right += 1;
-  }
+  const temp = digits[j];
+  digits[j] = digits[k];
+  digits[k] = temp;
+  const reversedTail = digits.splice(j + 1).reverse();
+  digits.push(...reversedTail);
 
   let result = 0;
-  let index = digits.length - 1;
-  while (index >= 0) {
-    result = result * 10 + digits[index];
-    index += 1;
+  for (let l = 0; l < digits.length; l += 1) {
+    result = result * 10 + digits[l];
   }
-
   return result;
 }
 
